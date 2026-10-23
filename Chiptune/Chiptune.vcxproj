@@ -142,6 +142,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <MASM Include="audio.asm">
+      <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
+    </MASM>
     <MASM Include="input.asm">
       <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
     </MASM>

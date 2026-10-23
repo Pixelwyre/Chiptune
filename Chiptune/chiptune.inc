@@ -1,4 +1,7 @@
 ; chiptune.inc
 
-; input.asm Prototypes
+; input.asm
 ProcessInput PROTO
+
+; audio.asm
+PlayNote PROTO, keyChar:BYTE
