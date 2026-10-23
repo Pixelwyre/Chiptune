@@ -12,10 +12,10 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [ ] Win32 Beep API integration for real-time sound output
 - [ ] Octave shifting using bitwise SHL and SHR instructions
 - [ ] Tempo adjustment using MUL and DIV
-- [ ] Static console interface layout drawn with WriteString
-- [ ] Target coordinates update with Gotoxy to prevent screen flicker
+- [x] Static console interface layout drawn with WriteString
+- [x] Target coordinates update with Gotoxy to prevent screen flicker
 - [ ] Visual keypress feedback using SetTextColor
-- [ ] Telemetry display for current octave, mode, and frequency
+- [x] Telemetry display for current octave, mode, and frequency
 - [ ] Recording notes into a memory buffer using indirect addressing
 - [ ] Sequence playback engine using ECX, LOOP, and call Delay
 - [ ] Buffer memory wiping using string instructions (CLD and REP STOSB)
