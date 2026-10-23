@@ -5,12 +5,14 @@ INCLUDE chiptune.inc
 
 .code
 main PROC
-	call Clrscr
+	call DrawTUI
 
 MainLoop:
 	call ProcessInput
+
 	mov eax, 10
 	call Delay
+
 	jmp MainLoop
 
 	exit

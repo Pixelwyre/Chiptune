@@ -24,6 +24,9 @@
     <MASM Include="audio.asm">
       <Filter>Source Files</Filter>
     </MASM>
+    <MASM Include="tui.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="chiptune.inc">

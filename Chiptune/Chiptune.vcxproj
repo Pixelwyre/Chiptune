@@ -152,6 +152,9 @@
       <FileType>Document</FileType>
       <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
     </MASM>
+    <MASM Include="tui.asm">
+      <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="chiptune.inc" />
