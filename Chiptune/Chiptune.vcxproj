@@ -142,10 +142,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <MASM Include="input.asm">
+      <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
+    </MASM>
     <MASM Include="main.asm">
       <FileType>Document</FileType>
       <IncludePaths Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:/Irvine";%(IncludePaths)</IncludePaths>
     </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="chiptune.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
