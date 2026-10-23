@@ -31,6 +31,8 @@ CheckNextKey:
 	inc esi
 	loop CheckNextKey
 
+	jmp NoKey
+
 KeyMatch:
 	INVOKE PlayNote, al
 

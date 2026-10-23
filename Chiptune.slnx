@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Chiptune/Chiptune.vcxproj" />
+  <Project Path="Chiptune/Chiptune.vcxproj" Id="5f734dbb-b2fe-4d46-99f5-eae415f312dc" />
 </Solution>
