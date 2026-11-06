@@ -14,7 +14,7 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [ ] Tempo adjustment using MUL and DIV
 - [x] Static console interface layout drawn with WriteString
 - [x] Target coordinates update with Gotoxy to prevent screen flicker
-- [ ] Visual keypress feedback using SetTextColor
+- [x] Visual keypress feedback using SetTextColor
 - [x] Telemetry display for current octave, mode, and frequency
 - [ ] Recording notes into a memory buffer using indirect addressing
 - [ ] Sequence playback engine using ECX, LOOP, and call Delay
