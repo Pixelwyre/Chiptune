@@ -11,7 +11,7 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [x] Dynamic array indexing (MOV EAX, FreqTable[EBX*4])
 - [x] Win32 Beep API integration for real-time sound output
 - [x] Octave shifting using bitwise SHL and SHR instructions
-- [ ] Tempo adjustment using MUL and DIV
+- [x] Tempo adjustment using MUL and DIV
 - [x] Static console interface layout drawn with WriteString
 - [x] Target coordinates update with Gotoxy to prevent screen flicker
 - [x] Visual keypress feedback using SetTextColor
@@ -19,7 +19,7 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [x] Recording notes into a memory buffer using indirect addressing
 - [x] Sequence playback engine using ECX, LOOP, and call Delay
 - [x] Buffer memory wiping using string instructions (CLD and REP STOSB)
-- [ ] Loading and playing pre-set tracks from a 2D array
+- [x] Loading and playing pre-set tracks from a 2D array
 
 ## Group Members (BCS-3A)
 - Muhammad Shayan Asim (25K-0557)

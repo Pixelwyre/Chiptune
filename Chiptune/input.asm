@@ -2,7 +2,7 @@ INCLUDE Irvine32.inc
 INCLUDE chiptune.inc
 
 .data
-	ValidKeys BYTE 'A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', '+', '=', '-', 'R', 'P', 'C'
+	ValidKeys BYTE 'A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', '+', '=', '-', 'R', 'P', 'C', '[', ']', '1', '2'
 	KeyCount DWORD ($ - ValidKeys)			; calculates total elements
 
 .code
@@ -53,6 +53,14 @@ HandleControl:
 	je TriggerPlayback
 	cmp al, 'C'
 	je ClearBuffer
+	cmp al, '['
+	je TempoDown
+	cmp al, ']'
+	je TempoUp
+	cmp al, '1'
+	je LoadTrack1
+	cmp al, '2'
+	je LoadTrack2
 
 	jmp NoKey
 
@@ -82,6 +90,22 @@ TriggerPlayback:
 
 ClearBuffer:
 	INVOKE ResetBuffer
+	jmp NoKey
+
+TempoDown:
+	INVOKE AdjustTempo, -1
+	jmp NoKey
+
+TempoUp:
+	INVOKE AdjustTempo, 1
+	jmp NoKey
+
+LoadTrack1:
+	INVOKE LoadPresetTrack, 0
+	jmp NoKey
+
+LoadTrack2:
+	INVOKE LoadPresetTrack, 1
 	jmp NoKey
 
 NoKey:

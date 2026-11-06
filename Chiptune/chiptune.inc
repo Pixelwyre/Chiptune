@@ -12,6 +12,9 @@ GetRecordState PROTO
 GetNoteCount PROTO
 PlaySequence PROTO
 ResetBuffer PROTO
+AdjustTempo PROTO, direction:SDWORD
+GetTempo PROTO
+LoadPresetTrack PROTO, trackIndex:DWORD
 
 ; kernel32
 Beep PROTO, dwFreq:DWORD, dwDuration:DWORD
