@@ -10,7 +10,7 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [x] Base frequency lookup array for piano keys (A to K)
 - [x] Dynamic array indexing (MOV EAX, FreqTable[EBX*4])
 - [x] Win32 Beep API integration for real-time sound output
-- [ ] Octave shifting using bitwise SHL and SHR instructions
+- [x] Octave shifting using bitwise SHL and SHR instructions
 - [ ] Tempo adjustment using MUL and DIV
 - [x] Static console interface layout drawn with WriteString
 - [x] Target coordinates update with Gotoxy to prevent screen flicker

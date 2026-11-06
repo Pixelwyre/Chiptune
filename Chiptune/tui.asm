@@ -20,16 +20,24 @@ INCLUDE chiptune.inc
 	; status panel
 	StatusPanel0 BYTE "บ Active Octave: [   ]                 บ Active Note/Freq: [     /         ]   บ", 0Dh, 0Ah, 0
 
-	; border for key stuff
-	KeySep0 BYTE "ศออออออออออออออออออออออออออออออออออออออสอออออออออออออออออออออออออออออออออออออออผ", 0Dh, 0Ah, 0
-    
-    KeyPanelFrame0 BYTE "ษออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป", 0Dh, 0Ah, 0
-    KeyPanelFrame1 BYTE "บ                                                                              บ", 0Dh, 0Ah, 0
-    KeyPanelFrame2 BYTE "บ                              [ KEY STUFF GOES HERE ]                         บ", 0Dh, 0Ah, 0
-    KeyPanelFrame3 BYTE "บ                                                                              บ", 0Dh, 0Ah, 0
-    KeyPanelFrame4 BYTE "ศออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ", 0Dh, 0Ah, 0
+	; border between status and keyboard
+	KeySep0 BYTE "ฬออออออออออออออออออออออออออออออออออออออสอออออออออออออออออออออออออออออออออออออออน", 0Dh, 0Ah, 0
+
+	; piano keyboard
+	KeyPanelFrame0 BYTE "บ                                                                              บ", 0Dh, 0Ah, 0
+	KeyPanelFrame1 BYTE "บ  ฺฤฤฤฤฤฤยฤฤฤยฤฤฤฤยฤฤฤยฤฤฤฤฤฤยฤฤฤฤฤฤยฤฤฤยฤฤฤฤยฤฤฤยฤฤฤฤยฤฤฤยฤฤฤฤฤฤยฤฤฤฤฤฤฤฤฟ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame2 BYTE "บ  ณ      ณ   ณ    ณ   ณ      ณ      ณ   ณ    ณ   ณ    ณ   ณ      ณ        ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame3 BYTE "บ  ณ      ณ W ณ    ณ E ณ      ณ      ณ T ณ    ณ Y ณ    ณ U ณ      ณ        ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame4 BYTE "บ  ณ      ภฤยฤู    ภฤยฤู      ณ      ภฤยฤู    ภฤยฤู    ภฤยฤู      ณ        ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame5 BYTE "บ  ณ        ณ        ณ        ณ        ณ        ณ        ณ        ณ        ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame6 BYTE "บ  ณ  [A]   ณ  [S]   ณ  [D]   ณ  [F]   ณ  [G]   ณ  [H]   ณ  [J]   ณ  [K]   ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame7 BYTE "บ  ณ   C    ณ   D    ณ   E    ณ   F    ณ   G    ณ   A    ณ   B    ณ   C    ณ   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame8 BYTE "บ  ภฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤมฤฤฤฤฤฤฤฤู   บ", 0Dh, 0Ah, 0
+	KeyPanelFrame9 BYTE "บ                                                                              บ", 0Dh, 0Ah, 0
+	KeyPanelFrame10 BYTE "ศออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ", 0Dh, 0Ah, 0
 
 	msgHz BYTE " Hz", 0
+	msgBlank BYTE "         ", 0		; 9 spaces, clears the freq slot
 
 .code
 DrawTUI PROC
@@ -72,8 +80,6 @@ DrawTUI PROC
 	mov  edx, OFFSET KeySep0
 	call WriteString
 
-	call CrLf
-
 	; draw piano keyboard (light green)
 	mov  eax, lightGreen + (black * 16)
 	call SetTextColor
@@ -88,6 +94,18 @@ DrawTUI PROC
 	call WriteString
 	mov  edx, OFFSET KeyPanelFrame4
 	call WriteString
+	mov  edx, OFFSET KeyPanelFrame5
+	call WriteString
+	mov  edx, OFFSET KeyPanelFrame6
+	call WriteString
+	mov  edx, OFFSET KeyPanelFrame7
+	call WriteString
+	mov  edx, OFFSET KeyPanelFrame8
+	call WriteString
+	mov  edx, OFFSET KeyPanelFrame9
+	call WriteString
+	mov  edx, OFFSET KeyPanelFrame10
+	call WriteString
 
 	; reset color to default
 	mov  eax, white + (black * 16)
@@ -96,16 +114,30 @@ DrawTUI PROC
 	ret
 DrawTUI ENDP
 
-UpdateStatusPanel PROC, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
+UpdateOctaveDisplay PROC, activeOctave:DWORD
 	; update active octave (x 19, y 9)
 	mov dl, 19
 	mov dh, 9
 	call Gotoxy
-	
+
 	mov eax, yellow + (black * 16)
 	call SetTextColor
 	mov eax, activeOctave
 	call WriteDec
+
+	; reset color to default
+	mov eax, white + (black * 16)
+	call SetTextColor
+
+	ret
+UpdateOctaveDisplay ENDP
+
+UpdateStatusPanel PROC, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
+	; update active octave
+	INVOKE UpdateOctaveDisplay, activeOctave
+
+	mov eax, yellow + (black * 16)
+	call SetTextColor
 
 	; update active note (x 62, y 9)
 	mov dl, 62
@@ -115,6 +147,14 @@ UpdateStatusPanel PROC, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
 	mov al, keyChar
 	call WriteChar
 	
+	; clear old frequency (x 66, y 9) so leftover digits do not stay
+	mov dl, 66
+	mov dh, 9
+	call Gotoxy
+
+	mov edx, OFFSET msgBlank
+	call WriteString
+
 	; update current frequency (x 66, y 9)
 	mov dl, 66
 	mov dh, 9
