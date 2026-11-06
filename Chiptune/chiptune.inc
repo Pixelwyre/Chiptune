@@ -4,7 +4,10 @@
 ProcessInput PROTO
 
 ; audio.asm
-PlayNote PROTO, keyChar:BYTE
+PlayNote PROTO, keyIndex:DWORD, keyChar:BYTE
+
+; kernel32
+Beep PROTO, dwFreq:DWORD, dwDuration:DWORD
 
 ; tui.asm
 DrawTUI PROTO

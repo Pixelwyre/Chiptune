@@ -7,9 +7,9 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [x] Non-blocking keyboard input loop using ReadKey
 - [x] Idle and active keypress handling using the CPU Zero Flag (ZF)
 - [x] Key routing jump chain (CMP and JE) to handle notes and controls
-- [ ] Base frequency lookup array for piano keys (A to K)
-- [ ] Dynamic array indexing (MOV EAX, FreqTable[EBX*4])
-- [ ] Win32 Beep API integration for real-time sound output
+- [x] Base frequency lookup array for piano keys (A to K)
+- [x] Dynamic array indexing (MOV EAX, FreqTable[EBX*4])
+- [x] Win32 Beep API integration for real-time sound output
 - [ ] Octave shifting using bitwise SHL and SHR instructions
 - [ ] Tempo adjustment using MUL and DIV
 - [x] Static console interface layout drawn with WriteString

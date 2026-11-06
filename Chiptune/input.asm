@@ -34,7 +34,10 @@ CheckNextKey:
 	jmp NoKey
 
 KeyMatch:
-	INVOKE PlayNote, al
+	cmp esi, 12					; only notes (0-12) play for now
+	ja NoKey
+
+	INVOKE PlayNote, esi, al
 
 NoKey:
 	ret
