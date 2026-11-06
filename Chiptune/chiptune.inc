@@ -26,4 +26,5 @@ UpdateOctaveDisplay PROTO, activeOctave:DWORD
 HighlightKey PROTO, keyIndex:DWORD
 UpdateModeDisplay PROTO, modeState:DWORD
 UpdateRecordedCount PROTO, noteCount:DWORD
+UpdateTempoDisplay PROTO, tempo:DWORD
 FlashControlLegend PROTO, controlIndex:DWORD

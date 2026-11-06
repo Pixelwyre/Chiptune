@@ -182,6 +182,7 @@ TempoSpeedUp:
 
 SaveTempo:
 	mov BaseDuration, eax
+	INVOKE UpdateTempoDisplay, BaseDuration
 	pop ebx
 	ret
 AdjustTempo ENDP

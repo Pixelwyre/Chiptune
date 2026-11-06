@@ -114,7 +114,7 @@ NoKey:
 ExitProgram:
 	; move cursor below the ui so exit text does not print inside it
 	mov dl, 0
-	mov dh, 22
+	mov dh, 24
 	call Gotoxy
 	exit
 ProcessInput ENDP

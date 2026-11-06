@@ -40,7 +40,7 @@ INCLUDE chiptune.inc
 	msgBlank BYTE "         ", 0		; 9 spaces, clears the freq slot
 
 	keyX_Table BYTE 5, 10, 14, 19, 23, 32, 37, 41, 46, 50, 55, 59, 68
-	keyY_Table BYTE 17, 14, 17, 14, 17, 17, 14, 17, 14, 17, 14, 17, 17
+	keyY_Table BYTE 19, 16, 19, 16, 19, 19, 16, 19, 16, 19, 16, 19, 19
 
 	keyStr_0 BYTE " [A] ", 0
 	keyStr_1 BYTE "³ W ³", 0
@@ -65,6 +65,7 @@ INCLUDE chiptune.inc
 	strRecording BYTE "Record ", 0
 	strPlaying BYTE "Playing", 0
 	strCountBlank BYTE "       ", 0
+	tempoBlank BYTE "    ", 0
 
 	controlY_Table BYTE 4, 5, 6, 7
 	controlX_Table BYTE 60, 61, 61, 61
@@ -75,6 +76,9 @@ INCLUDE chiptune.inc
 	controlStr_3 BYTE " [P] Playback", 0
 
 	controlStr_Table DWORD OFFSET controlStr_0, OFFSET controlStr_1, OFFSET controlStr_2, OFFSET controlStr_3
+
+	InfoPanel5 BYTE 0BAh, "  Tempo: [    ms]", 43 DUP(' '), " [ slows, ] speeds", 0BAh, 0Dh, 0Ah, 0
+	InfoPanel6 BYTE 0BAh, "  Presets: [1]/[2]", 42 DUP(' '), " [C] Clear", 8 DUP(' '), 0BAh, 0Dh, 0Ah, 0
 
 .code
 DrawTUI PROC
@@ -104,6 +108,10 @@ DrawTUI PROC
 	mov  edx, OFFSET InfoPanel3
 	call WriteString
 	mov  edx, OFFSET InfoPanel4
+	call WriteString
+	mov  edx, OFFSET InfoPanel5
+	call WriteString
+	mov  edx, OFFSET InfoPanel6
 	call WriteString
 
 	; draw status area (yellow)
@@ -150,14 +158,16 @@ DrawTUI PROC
 
 	INVOKE UpdateRecordedCount, 0
 	INVOKE UpdateModeDisplay, 0
+	INVOKE GetTempo
+	INVOKE UpdateTempoDisplay, eax
 
 	ret
 DrawTUI ENDP
 
 UpdateOctaveDisplay PROC, activeOctave:DWORD
-	; update active octave (x 19, y 9)
+	; update active octave (x 19, y 11)
 	mov dl, 19
-	mov dh, 9
+	mov dh, 11
 	call Gotoxy
 
 	mov eax, yellow + (black * 16)
@@ -179,25 +189,25 @@ UpdateStatusPanel PROC, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
 	mov eax, yellow + (black * 16)
 	call SetTextColor
 
-	; update active note (x 62, y 9)
+	; update active note (x 62, y 11)
 	mov dl, 62
-	mov dh, 9
+	mov dh, 11
 	call Gotoxy
 
 	mov al, keyChar
 	call WriteChar
 	
-	; clear old frequency (x 66, y 9) so leftover digits do not stay
+	; clear old frequency (x 66, y 11) so leftover digits do not stay
 	mov dl, 66
-	mov dh, 9
+	mov dh, 11
 	call Gotoxy
 
 	mov edx, OFFSET msgBlank
 	call WriteString
 
-	; update current frequency (x 66, y 9)
+	; update current frequency (x 66, y 11)
 	mov dl, 66
-	mov dh, 9
+	mov dh, 11
 	call Gotoxy
 
 	mov eax, currentFreq
@@ -282,6 +292,30 @@ UpdateRecordedCount PROC, noteCount:DWORD
 	call SetTextColor
 	ret
 UpdateRecordedCount ENDP
+
+UpdateTempoDisplay PROC, tempo:DWORD
+	push edx
+
+	mov dl, 11
+	mov dh, 8
+	call Gotoxy
+
+	mov eax, yellow + (black * 16)
+	call SetTextColor
+	mov edx, OFFSET tempoBlank
+	call WriteString
+
+	mov dl, 11
+	mov dh, 8
+	call Gotoxy
+	mov eax, tempo
+	call WriteDec
+
+	mov eax, white + (black * 16)
+	call SetTextColor
+	pop edx
+	ret
+UpdateTempoDisplay ENDP
 
 UpdateModeDisplay PROC, modeState:DWORD
 	mov dl, 20
