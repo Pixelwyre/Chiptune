@@ -10,6 +10,8 @@ RecordNote PROTO, freq:DWORD
 SetRecordState PROTO, newState:DWORD
 GetRecordState PROTO
 GetNoteCount PROTO
+PlaySequence PROTO
+ResetBuffer PROTO
 
 ; kernel32
 Beep PROTO, dwFreq:DWORD, dwDuration:DWORD

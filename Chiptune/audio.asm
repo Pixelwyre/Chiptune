@@ -92,6 +92,52 @@ GetNoteCount PROC
 	ret
 GetNoteCount ENDP
 
+PlaySequence PROC
+	pushad
+
+	mov ecx, NoteCount
+	test ecx, ecx
+	jz PlayDone
+
+	INVOKE UpdateModeDisplay, 2
+	mov esi, 0
+
+PlayLoop:
+	push ecx
+	mov ebx, NoteBuffer[esi*4]
+	INVOKE UpdateStatusPanel, 'P', ebx, CurrentOctave
+	INVOKE Beep, ebx, 100
+
+	mov eax, 50
+	call Delay
+
+	inc esi
+	pop ecx
+	loop PlayLoop
+
+PlayDone:
+	mov eax, IsRecording
+	INVOKE UpdateModeDisplay, eax
+	popad
+	ret
+PlaySequence ENDP
+
+ResetBuffer PROC
+	pushad
+
+	cld
+	mov edi, OFFSET NoteBuffer
+	mov ecx, MAX_NOTES * 4
+	mov al, 0
+	rep stosb
+
+	mov NoteCount, 0
+	INVOKE UpdateRecordedCount, NoteCount
+
+	popad
+	ret
+ResetBuffer ENDP
+
 ChangeOctave PROC, direction:SDWORD
 	mov eax, CurrentOctave
 	add eax, direction

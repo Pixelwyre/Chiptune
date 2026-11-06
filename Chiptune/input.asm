@@ -2,7 +2,7 @@ INCLUDE Irvine32.inc
 INCLUDE chiptune.inc
 
 .data
-	ValidKeys BYTE 'A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', '+', '=', '-', 'R', 'P'
+	ValidKeys BYTE 'A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', '+', '=', '-', 'R', 'P', 'C'
 	KeyCount DWORD ($ - ValidKeys)			; calculates total elements
 
 .code
@@ -51,14 +51,18 @@ HandleControl:
 	je ToggleRecord
 	cmp al, 'P'
 	je TriggerPlayback
+	cmp al, 'C'
+	je ClearBuffer
 
 	jmp NoKey
 
 OctaveUp:
+	INVOKE FlashControlLegend, 1
 	INVOKE ChangeOctave, 1
 	jmp NoKey
 
 OctaveDown:
+	INVOKE FlashControlLegend, 1
 	INVOKE ChangeOctave, -1
 	jmp NoKey
 
@@ -73,13 +77,12 @@ ToggleRecord:
 
 TriggerPlayback:
 	INVOKE FlashControlLegend, 3
+	INVOKE PlaySequence
+	jmp NoKey
 
-	INVOKE UpdateModeDisplay, 2
-	mov eax, 300
-	call Delay
-
-	call GetRecordState
-	INVOKE UpdateModeDisplay, eax
+ClearBuffer:
+	INVOKE ResetBuffer
+	jmp NoKey
 
 NoKey:
 	ret
