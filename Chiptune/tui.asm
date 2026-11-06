@@ -61,6 +61,21 @@ INCLUDE chiptune.inc
                  DWORD OFFSET KeyStr_8, OFFSET KeyStr_9, OFFSET KeyStr_10, OFFSET KeyStr_11
                  DWORD OFFSET KeyStr_12
 
+	strIdle BYTE "Idle   ", 0
+	strRecording BYTE "Record ", 0
+	strPlaying BYTE "Playing", 0
+	strCountBlank BYTE "       ", 0
+
+	controlY_Table BYTE 4, 5, 6, 7
+	controlX_Table BYTE 60, 61, 61, 61
+
+	controlStr_0 BYTE " [A-K] Play Notes", 0
+	controlStr_1 BYTE " [+]/[-] Octave", 0
+	controlStr_2 BYTE " [R] Record", 0
+	controlStr_3 BYTE " [P] Playback", 0
+
+	controlStr_Table DWORD OFFSET controlStr_0, OFFSET controlStr_1, OFFSET controlStr_2, OFFSET controlStr_3
+
 .code
 DrawTUI PROC
 	call Clrscr
@@ -132,6 +147,8 @@ DrawTUI PROC
 	; reset color to default
 	mov  eax, white + (black * 16)
 	call SetTextColor
+
+	INVOKE UpdateModeDisplay, 0
 
 	ret
 DrawTUI ENDP
@@ -237,4 +254,99 @@ HighlightDone:
 	pop ebx
 	ret
 HighlightKey ENDP
+
+UpdateRecordedCount PROC, noteCount:DWORD
+	mov dl, 20
+	mov dh, 3
+	call Gotoxy
+
+	mov eax, yellow + (black * 16)
+	call SetTextColor
+
+	mov edx, OFFSET strCountBlank
+	call WriteString
+
+	mov dl, 20
+	mov dh, 3
+	call Gotoxy
+
+	mov eax, noteCount
+	call WriteDec
+	mov al, '/'
+	call WriteChar
+	mov eax, 100
+	call WriteDec
+
+	mov eax, white + (black * 16)
+	call SetTextColor
+	ret
+UpdateRecordedCount ENDP
+
+UpdateModeDisplay PROC, modeState:DWORD
+	mov dl, 20
+	mov dh, 4
+	call Gotoxy
+
+	cmp modeState, 1
+	je ModeRec
+	cmp modeState, 2
+	je ModePlay
+
+	; default idle
+	mov eax, lightRed + (black * 16)
+	call SetTextColor
+	mov edx, OFFSET strIdle
+	jmp DrawMode
+
+ModeRec:
+	mov eax, lightRed + (black * 16)
+	call SetTextColor
+	mov edx, OFFSET strRecording
+	jmp DrawMode
+ModePlay:
+	mov eax, lightGreen + (black * 16)
+	call SetTextColor
+	mov edx, OFFSET strPlaying
+DrawMode:
+	call WriteString
+
+	mov eax, white + (black * 16)
+	call SetTextColor
+	ret
+UpdateModeDisplay ENDP
+
+FlashControlLegend PROC, controlIndex:DWORD
+	push ebx
+	push edx
+
+	mov ebx, controlIndex
+	cmp ebx, 3
+	ja FlashDone
+
+	mov dl, controlX_Table[ebx]
+	mov dh, controlY_Table[ebx]
+	call Gotoxy
+
+	mov eax, yellow + (black * 16)
+	call SetTextColor
+	mov edx, controlStr_Table[ebx*4]
+	call WriteString
+
+	mov eax, 50
+	call Delay
+
+	mov dl, controlX_Table[ebx]
+	mov dh, controlY_Table[ebx]
+	call Gotoxy
+
+	mov eax, white + (black * 16)
+	call SetTextColor
+	mov edx, controlStr_Table[ebx*4]
+	call WriteString
+
+FlashDone:
+	pop edx
+	pop ebx
+	ret
+FlashControlLegend ENDP
 END
