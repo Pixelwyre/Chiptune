@@ -5,8 +5,6 @@ INCLUDE chiptune.inc
 	ValidKeys BYTE 'A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', '+', '=', '-', 'R', 'P'
 	KeyCount DWORD ($ - ValidKeys)			; calculates total elements
 
-	isRecording DWORD 0
-
 .code
 ProcessInput PROC
 	call ReadKey
@@ -67,8 +65,10 @@ OctaveDown:
 ToggleRecord:
 	INVOKE FlashControlLegend, 2
 
-	xor isRecording, 1
-	INVOKE UpdateModeDisplay, isRecording
+	call GetRecordState
+	xor eax, 1
+	INVOKE SetRecordState, eax
+	INVOKE UpdateModeDisplay, eax
 	jmp NoKey
 
 TriggerPlayback:
@@ -78,7 +78,8 @@ TriggerPlayback:
 	mov eax, 300
 	call Delay
 
-	INVOKE UpdateModeDisplay, isRecording
+	call GetRecordState
+	INVOKE UpdateModeDisplay, eax
 
 NoKey:
 	ret

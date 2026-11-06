@@ -16,7 +16,7 @@ A simple console based 8-bit musical instrument and melody recorder written in x
 - [x] Target coordinates update with Gotoxy to prevent screen flicker
 - [x] Visual keypress feedback using SetTextColor
 - [x] Telemetry display for current octave, mode, and frequency
-- [ ] Recording notes into a memory buffer using indirect addressing
+- [x] Recording notes into a memory buffer using indirect addressing
 - [ ] Sequence playback engine using ECX, LOOP, and call Delay
 - [ ] Buffer memory wiping using string instructions (CLD and REP STOSB)
 - [ ] Loading and playing pre-set tracks from a 2D array

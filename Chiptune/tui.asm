@@ -148,6 +148,7 @@ DrawTUI PROC
 	mov  eax, white + (black * 16)
 	call SetTextColor
 
+	INVOKE UpdateRecordedCount, 0
 	INVOKE UpdateModeDisplay, 0
 
 	ret

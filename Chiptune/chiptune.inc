@@ -6,6 +6,10 @@ ProcessInput PROTO
 ; audio.asm
 PlayNote PROTO, keyIndex:DWORD, keyChar:BYTE
 ChangeOctave PROTO, direction:SDWORD
+RecordNote PROTO, freq:DWORD
+SetRecordState PROTO, newState:DWORD
+GetRecordState PROTO
+GetNoteCount PROTO
 
 ; kernel32
 Beep PROTO, dwFreq:DWORD, dwDuration:DWORD

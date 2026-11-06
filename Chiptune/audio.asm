@@ -2,6 +2,11 @@ INCLUDE Irvine32.inc
 INCLUDE chiptune.inc
 
 .data
+	MAX_NOTES EQU 100
+	NoteBuffer DWORD MAX_NOTES DUP(0)
+	NoteCount DWORD 0
+	IsRecording DWORD 0
+
 	; base freqs for for A, W, S, E, D, F, T, G, Y, H, U, J, K in Hz
 	FreqTable DWORD 261, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523
 
@@ -34,6 +39,9 @@ ShiftDone:
 	; update status box visuals directly
 	INVOKE UpdateStatusPanel, keyChar, ebx, CurrentOctave
 
+	; record the shifted frequency when recording is active
+	INVOKE RecordNote, ebx
+
 	; play the note for 100 ms
 	INVOKE Beep, ebx, 100
 
@@ -43,6 +51,46 @@ ShiftDone:
 	pop ebx
 	ret
 PlayNote ENDP
+
+RecordNote PROC, freq:DWORD
+	push edi
+	push ecx
+
+	cmp IsRecording, 1
+	jne SkipRecord
+
+	mov ecx, NoteCount
+	cmp ecx, MAX_NOTES
+	jae SkipRecord
+
+	mov edi, OFFSET NoteBuffer
+	mov eax, freq
+	mov [edi + ecx*4], eax
+
+	inc NoteCount
+	INVOKE UpdateRecordedCount, NoteCount
+
+SkipRecord:
+	pop ecx
+	pop edi
+	ret
+RecordNote ENDP
+
+SetRecordState PROC, newState:DWORD
+	mov eax, newState
+	mov IsRecording, eax
+	ret
+SetRecordState ENDP
+
+GetRecordState PROC
+	mov eax, IsRecording
+	ret
+GetRecordState ENDP
+
+GetNoteCount PROC
+	mov eax, NoteCount
+	ret
+GetNoteCount ENDP
 
 ChangeOctave PROC, direction:SDWORD
 	mov eax, CurrentOctave
