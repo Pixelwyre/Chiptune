@@ -14,3 +14,4 @@ Beep PROTO, dwFreq:DWORD, dwDuration:DWORD
 DrawTUI PROTO
 UpdateStatusPanel PROTO, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
 UpdateOctaveDisplay PROTO, activeOctave:DWORD
+HighlightKey PROTO, keyIndex:DWORD

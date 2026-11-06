@@ -37,6 +37,9 @@ ShiftDone:
 	; play the note for 100 ms
 	INVOKE Beep, ebx, 100
 
+	; highlight the key in the TUI
+	INVOKE HighlightKey, keyIndex
+
 	pop ebx
 	ret
 PlayNote ENDP

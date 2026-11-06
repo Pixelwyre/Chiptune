@@ -39,6 +39,28 @@ INCLUDE chiptune.inc
 	msgHz BYTE " Hz", 0
 	msgBlank BYTE "         ", 0		; 9 spaces, clears the freq slot
 
+	keyX_Table BYTE 5, 10, 14, 19, 23, 32, 37, 41, 46, 50, 55, 59, 68
+	keyY_Table BYTE 17, 14, 17, 14, 17, 17, 14, 17, 14, 17, 14, 17, 17
+
+	keyStr_0 BYTE " [A] ", 0
+	keyStr_1 BYTE "³ W ³", 0
+	keyStr_2 BYTE " [S] ", 0
+	keyStr_3 BYTE "³ E ³", 0
+	keyStr_4 BYTE " [D] ", 0
+	keyStr_5 BYTE " [F] ", 0
+	keyStr_6 BYTE "³ T ³", 0
+	keyStr_7 BYTE " [G] ", 0
+	keyStr_8 BYTE "³ Y ³", 0
+	keyStr_9 BYTE " [H] ", 0
+	keyStr_10 BYTE "³ U ³", 0
+	keyStr_11 BYTE " [J] ", 0
+	keyStr_12 BYTE " [K] ", 0
+
+	KeyStr_Table DWORD OFFSET KeyStr_0, OFFSET KeyStr_1, OFFSET KeyStr_2, OFFSET KeyStr_3
+                 DWORD OFFSET KeyStr_4, OFFSET KeyStr_5, OFFSET KeyStr_6, OFFSET KeyStr_7
+                 DWORD OFFSET KeyStr_8, OFFSET KeyStr_9, OFFSET KeyStr_10, OFFSET KeyStr_11
+                 DWORD OFFSET KeyStr_12
+
 .code
 DrawTUI PROC
 	call Clrscr
@@ -172,4 +194,47 @@ UpdateStatusPanel PROC, keyChar:BYTE, currentFreq:DWORD, activeOctave:DWORD
 
 	ret
 UpdateStatusPanel ENDP
+
+HighlightKey PROC, keyIndex:DWORD
+	push ebx
+	push edx
+
+	mov ebx, keyIndex
+	cmp ebx, 12
+	ja HighlightDone				; only highlight keys 0-12
+
+	; get x and y coordinates for the key
+	mov dl, keyX_Table[ebx]
+	mov dh, keyY_Table[ebx]
+	call Gotoxy
+
+	; highlight yellow text black bg
+	mov eax, yellow + (black * 16)
+	call SetTextColor
+
+	mov edx, KeyStr_Table[ebx*4]
+	call WriteString
+
+	mov eax, 200
+	call Delay
+
+	; reset to og color
+	mov dl, keyX_Table[ebx]
+	mov dh, keyY_Table[ebx]
+	call Gotoxy
+
+	mov eax, lightGreen + (black * 16)
+	call SetTextColor
+
+	mov edx, keyStr_Table[ebx*4]
+	call WriteString
+
+	; reset default text to white
+	mov eax, white + (black * 16)
+	call SetTextColor
+HighlightDone:
+	pop edx
+	pop ebx
+	ret
+HighlightKey ENDP
 END
