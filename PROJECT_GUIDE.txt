@@ -1,0 +1,251 @@
+CHIPTUNE SYNTHESIZER & SEQUENCER
+Project walkthrough for the group
+
+Purpose
+This is a 32-bit x86 MASM console program built with Visual Studio and the
+Irvine32 library. It plays keyboard notes, changes octave and playback tempo,
+records note frequencies into memory, plays the recorded sequence, clears the
+buffer, and loads one of two built-in preset sequences.
+
+This guide follows the current source code. MASM calls the routines declared
+with PROC procedures; PROTO declarations in chiptune.inc allow the modules to
+call one another.
+
+HOW TO RUN AND USE IT
+The program starts by drawing the TUI and then continuously checks for key
+input. Controls currently handled by input.asm are:
+
+  A, W, S, E, D, F, T, G, Y, H, U, J, K  Play notes
+  + or =                                  Raise octave
+  -                                       Lower octave
+  R                                       Toggle recording on/off
+  P                                       Play the sequence in the note buffer
+  C                                       Clear the note buffer
+  [                                       Slow down (increase note duration)
+  ]                                       Speed up (decrease note duration)
+  1                                       Load preset track 1
+  2                                       Load preset track 2
+  Esc                                     Exit
+
+The active note/frequency panel shows the input key for live notes. During
+sequence playback, it intentionally displays P as a playback marker; the
+current buffer stores frequencies, not original key names. A preset value of
+zero is treated as a rest and waits for the current note duration without
+calling Beep.
+
+SOURCE FILE MAP
+main.asm
+  Program entry point. Calls DrawTUI once, then repeatedly calls ProcessInput
+  and waits 10 ms with Irvine32 Delay. The loop ends when ProcessInput handles
+  Esc and exits the program.
+
+input.asm
+  Owns the recognized-key list and routes ReadKey input to the audio and TUI
+  procedures. It does not own recording state; that state is in audio.asm.
+
+audio.asm
+  Owns the frequency table, current octave, 100-DWORD NoteBuffer, note count,
+  recording flag, playback duration, and two preset tracks. Implements live
+  note generation, recording, playback, tempo adjustment, buffer clearing,
+  preset loading, and octave changes.
+
+tui.asm
+  Draws the console interface and updates its fields at specific cursor
+  coordinates. It contains display procedures for octave, active note/frequency,
+  recorded-note count, mode, tempo, note-key highlighting, and temporary control
+  legend highlighting. The piano key artwork is separate from the information
+  panel.
+
+chiptune.inc
+  Shared declarations (PROTO) for procedures implemented in other assembly
+  files. Include this file wherever a cross-module procedure is called.
+
+PROCEDURE EXECUTION ORDER
+1. Startup: main.asm - main
+   a. Calls DrawTUI (tui.asm).
+	  - Clrscr clears the console.
+	  - SetTextColor and WriteString draw the title, controls, status panel,
+		and piano keyboard.
+	  - UpdateRecordedCount initializes the counter to 0/100.
+	  - UpdateModeDisplay initializes the mode to Idle.
+	  - GetTempo returns the default 100 ms duration; UpdateTempoDisplay
+		writes it in the tempo field.
+   b. Repeats ProcessInput (input.asm), then calls Delay for 10 ms.
+
+2. Input: input.asm - ProcessInput
+   a. ReadKey checks for keyboard input without blocking the main loop. If no
+	  key is ready, the Zero Flag is set and ProcessInput returns immediately.
+   b. Esc is handled before ordinary key matching and exits the program.
+   c. Lowercase letters are converted to uppercase using CMP/JB/JA/SUB.
+   d. The key is compared against ValidKeys using an indexed scan. ECX is the
+	  number of entries and LOOP decrements ECX while advancing ESI.
+   e. Indices 0 through 12 are note keys and call PlayNote. Other matched keys
+	  go through the control branch below.
+
+3. Live note: input.asm -> audio.asm -> tui.asm / Irvine32
+   a. ProcessInput calls PlayNote with the matched note index and key character.
+   b. PlayNote reads FreqTable[index] using scaled indexing [EBX*4]. The table
+	  contains octave-4 base frequencies.
+   c. The frequency is shifted left or right according to CurrentOctave using
+	  SHL/SHR. This multiplies/divides by powers of two for octave changes.
+   d. UpdateStatusPanel writes the input character and adjusted frequency;
+	  UpdateOctaveDisplay refreshes the octave field.
+   e. RecordNote checks IsRecording. If active and NoteCount is below 100, it
+	  stores the adjusted frequency at [EDI + ECX*4], increments NoteCount,
+	  and calls UpdateRecordedCount.
+   f. Beep plays the frequency for BaseDuration milliseconds.
+   g. HighlightKey briefly changes the selected key's color, waits 200 ms with
+	  Delay, then restores the normal key color.
+
+4. Record toggle: input.asm -> audio.asm -> tui.asm
+   a. FlashControlLegend highlights the [R] control briefly.
+   b. GetRecordState returns IsRecording in EAX. XOR EAX,1 toggles 0/1.
+   c. SetRecordState saves the new shared state.
+   d. UpdateModeDisplay shows Idle (0) or Record (1).
+
+5. Sequence playback: input.asm -> audio.asm -> tui.asm / Irvine32
+   a. FlashControlLegend highlights the [P] control; then ProcessInput calls
+	  PlaySequence.
+   b. PlaySequence saves general-purpose registers with PUSHAD, reads
+	  NoteCount into ECX, displays Playing (mode 2), and starts at index ESI=0.
+   c. Each LOOP iteration loads NoteBuffer[ESI*4]. For a nonzero frequency it
+	  updates the telemetry with key marker P, calls Beep for BaseDuration,
+	  and waits half that duration before the next note. For zero (a rest), it
+	  waits the full BaseDuration and skips Beep.
+   d. LOOP decrements ECX and continues until all recorded entries have been
+	  visited. The mode is restored from IsRecording, then POPAD restores the
+	  saved registers.
+
+6. Clear buffer: input.asm -> audio.asm -> tui.asm
+   a. Pressing C calls ResetBuffer.
+   b. CLD clears the direction flag so string operations advance through
+	  memory. EDI points at NoteBuffer; ECX is set to MAX_NOTES*4 (400 bytes);
+	  REP STOSB writes AL=0 into every byte.
+   c. NoteCount is reset to zero and UpdateRecordedCount refreshes the UI.
+
+7. Tempo adjustment: input.asm -> audio.asm -> tui.asm
+   a. [ calls AdjustTempo with -1; ] calls it with +1.
+   b. AdjustTempo scales BaseDuration using unsigned MUL and DIV. Slower
+	  increases duration by 5/4; faster decreases it by 4/5. The value is
+	  clamped to 400 ms maximum and 25 ms minimum.
+   c. UpdateTempoDisplay clears and redraws the displayed duration. This value
+	  is a note duration in milliseconds, not a BPM measurement.
+
+8. Preset loading: input.asm -> audio.asm -> tui.asm
+   a. Key 1 calls LoadPresetTrack(0); key 2 calls LoadPresetTrack(1).
+   b. The procedure rejects indices above 1, clears the current buffer, and
+	  computes a row offset as trackIndex * (TRACK_SIZE*4). PresetTracks is
+	  stored as two contiguous rows of 16 DWORD frequencies.
+   c. A LOOP copies the selected row to NoteBuffer. NoteCount becomes 16 and
+	  UpdateRecordedCount refreshes the counter. Zero entries represent rests.
+   d. Press P afterward to play the loaded preset. Loading a preset replaces
+	  the current buffer contents.
+
+PROCEDURE REFERENCE
+main.asm
+  main
+	Draws the UI once, then runs the input loop until exit.
+
+input.asm
+  ProcessInput
+	Polls ReadKey, normalizes/matches input, and dispatches notes and controls.
+
+ audio.asm
+  PlayNote(keyIndex, keyChar)
+	Calculates the octave-adjusted frequency, updates telemetry, records the
+	note when recording is active, plays it, and requests key highlighting.
+  RecordNote(freq)
+	Bounded write to NoteBuffer using indirect addressing; updates the count.
+  SetRecordState(newState) / GetRecordState()
+	Store and retrieve the recording mode shared with input.asm and playback.
+  GetNoteCount()
+	Returns the number of populated entries in NoteBuffer.
+  PlaySequence()
+	Iterates over NoteBuffer with ECX/LOOP and plays notes or rests.
+  ResetBuffer()
+	Zeroes all 100 DWORDs with CLD/REP STOSB and resets the count.
+  AdjustTempo(direction) / GetTempo()
+	Adjusts the current duration within 25-400 ms / returns the duration.
+  LoadPresetTrack(trackIndex)
+	Copies one of two 16-entry preset rows into NoteBuffer.
+  ChangeOctave(direction)
+	Keeps CurrentOctave between 2 and 7 and updates the octave display.
+
+tui.asm
+  DrawTUI()
+	Clears and paints the complete screen, then initializes the dynamic fields.
+  UpdateOctaveDisplay(activeOctave)
+	Writes the active octave in the status panel.
+  UpdateStatusPanel(keyChar, currentFreq, activeOctave)
+	Updates the octave, active-key marker, and frequency telemetry.
+  HighlightKey(keyIndex)
+	Temporarily changes the color of the selected piano key.
+  UpdateRecordedCount(noteCount)
+	Writes the current number of buffered notes out of 100.
+  UpdateTempoDisplay(tempo)
+	Clears and writes the current duration in milliseconds.
+  UpdateModeDisplay(modeState)
+	Displays Idle, Record, or Playing using the corresponding text color.
+  FlashControlLegend(controlIndex)
+	Temporarily highlights the selected control legend entry.
+
+ASSEMBLY CONCEPTS AND WHY THEY ARE USED
+- Registers: EAX is used for arithmetic, function results, Beep frequency, and
+  WriteDec values. ECX is used for counts and LOOP. ESI indexes key/preset/note
+  data; EDI points at the recording buffer and is also used by STOSB. EBX keeps
+  values or indexes across operations. PUSH/POP and PUSHAD/POPAD preserve
+  registers around routines that use them.
+- Direct and indexed addressing: FreqTable[EBX*4] and NoteBuffer[ESI*4] use
+  a DWORD index scaled by four. Preset loading computes a row's byte offset
+  from trackIndex. Recording uses the requested indirect form [EDI + ECX*4].
+- CMP and conditional jumps: compare keys, classify controls, bound buffer and
+  preset access, and enforce octave/tempo limits.
+- ZF and ReadKey: ReadKey reports no available keystroke through the Zero Flag,
+  allowing the main loop to continue without waiting for input.
+- SHL/SHR: scale a base frequency by powers of two when changing octaves.
+- MUL/DIV: scale note duration to adjust playback speed. Longer duration is
+  slower; shorter duration is faster.
+- Stack operations: PROC parameters and INVOKE calls pass values between
+  modules. PUSH/POP and PUSHAD/POPAD preserve registers used by nested calls.
+- LOOP: counts through the key list, recorded sequence, and preset row using
+  ECX as the loop counter.
+- String operations: CLD and REP STOSB efficiently fill the complete note
+  buffer with zero bytes.
+- Irvine32 console routines: ReadKey (keyboard polling), Clrscr (screen clear),
+  Gotoxy (cursor positioning), SetTextColor (foreground/background color),
+  WriteString, WriteChar, and WriteDec (console output), and Delay (timing).
+- Beep: the Windows Beep API produces each audible note.
+- Modular assembly design: chiptune.inc PROTO declarations define callable
+  interfaces so input, audio, and TUI procedures can be implemented in separate
+  files while sharing a consistent contract.
+
+COURSE LEARNING OUTCOME CONNECTIONS
+LLO 1 - IDE use (compile, debug, run, refactor x86 Assembly)
+  The MASM source is organized in a Visual Studio project. Build it with the
+  configured MASM toolchain and Irvine32 library; run the console executable
+  and inspect procedure calls, registers, flags, and memory while debugging.
+
+LLO 2 - Addressing modes and processing (conditional, shifts, stack, strings)
+  Conditional processing: input.asm key comparisons and audio.asm bounds.
+  Shift operations: PlayNote's octave scaling in audio.asm.
+  Stack operations: procedure calls and register preservation in audio.asm and
+  tui.asm.
+  String handling: ResetBuffer's CLD/REP STOSB in audio.asm.
+  Addressing examples: scaled table lookups and [EDI + ECX*4] buffer writes.
+
+LLO 3 - Design a coding project in x86 or RISC Assembly
+  The project divides input, audio/buffer management, display, shared interfaces,
+  and startup across input.asm, audio.asm, tui.asm, chiptune.inc, and main.asm.
+  Features combine these modules through procedure calls and shared state.
+
+PLO coverage shown in the supplied outline is not a statement that every PLO is
+covered by every individual project feature. The course outline identifies
+Problem Analysis, Design/Develop Solutions, and Modern Tool Usage as covered;
+LLO 3 maps to Problem Analysis and Design/Develop Solutions.
+
+BUILD NOTES
+The project is x86/Win32 MASM and uses Irvine32.inc and irvine32.lib. The
+Debug|Win32 project configuration references C:\Irvine. A successful build
+requires the Visual Studio MASM build customization and the Irvine32 files to
+be installed at the configured locations. See Chiptune\Chiptune.vcxproj for
+project settings.
